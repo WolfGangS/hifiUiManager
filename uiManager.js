@@ -263,6 +263,8 @@ function reset(){
     Settings.setValue(SETTINGS_KEY_SETUP,false);
     Settings.setValue(SETTINGS_KEY_REPOSITRY,{});
     Settings.setValue(SETTINGS_KEY_REPO_URLS,[]);
+    Settings.setValue(SETTINGS_KEY_OPEN,true);
+    Settings.setValue(SETTINGS_KEY_REPOLIST, []);
     ScriptDiscoveryService.reloadAllScripts();
 }
 
