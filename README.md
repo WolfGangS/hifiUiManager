@@ -1,7 +1,7 @@
 # hifiUiManager
-A manager for Interface scripts, that suports multiple "repositories"
+A manager for Interface scripts, that supports multiple "repositories"
 
-You can install it by downloading the project and adding it localy, or by using the following url.
+You can install it by downloading the project and adding it locally, or by using the following url.
 
 https://wolfgangs.github.io/hifiUiManager/uiManager.js
 
@@ -34,7 +34,7 @@ The format is as below
             "version" : "1.0",
             "datetime" : "2017-01-20 20:00",
             "include" : true,
-            "tags" : ["test","bot","thing"
+            "tags" : ["test","bot","thing"]
         },
         "package2":{ .....
     },
@@ -47,11 +47,11 @@ The format is as below
 }
 ```
 
-The script will queery the url the user puts in, so taht is the one that needs to return the json.
+The script will queery the url the user puts in, so that is the one that needs to return the json.
 
-example: http://wlf.io/repo/  is the repo i have created. I place the script to return my repo json, in http://wlf.io/repo/index.php
+example: http://wlf.io/repo/  is the repo I have created. I place the script to return my repo json, in http://wlf.io/repo/index.php
 
-Due to the way that this has to be laoded you need to handle CORS with the "Access-Control-Allow-Origin" header.
+Due to the way that this has to be loaded you need to handle CORS with the "Access-Control-Allow-Origin" header.
 
 For users that download this manager, you need to allow "file://" if they are running it from the hosted github instance, you will need to allow "https://wolfgangs.github.io"
 
