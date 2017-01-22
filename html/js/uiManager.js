@@ -25,10 +25,11 @@ function testObj(obj,head){
 
 function getRepoListings(){
     alert("REPOS");
+    return;
     $.ajax({
         url: "repos.json",
         success: function(data){
-            alert(data);
+            //alert(data);
             webEvent({command:"setRepoList",value:JSON.parse(data)});
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
