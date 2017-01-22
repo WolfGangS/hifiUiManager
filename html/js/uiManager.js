@@ -24,16 +24,16 @@ function testObj(obj,head){
 }
 
 function getRepoListings(){
-    alert("REPOS");
+    //alert("REPOS");
     //return;
     $.ajax({
         url: "repos.json",
         success: function(data){
             if(!(data instanceof Object)){
-                alert("Not Object");
+                //alert("Not Object");
                 data = JSON.parse(data);
             }
-            else alert("OBJECT");
+            //else alert("OBJECT");
             webEvent({command:"setRepoList",value:data});
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
