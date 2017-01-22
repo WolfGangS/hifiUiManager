@@ -1,7 +1,11 @@
 # hifiUiManager
 A manager for Interface scripts, that suports multiple "repositories"
 
-#Repo Layout
+You can install it by downloading the project and adding it localy, or by using the following url.
+
+https://wolfgangs.github.io/hifiUiManager/uiManager.js
+
+# Repo Layout
 
 Repos are loaded as json.
 
