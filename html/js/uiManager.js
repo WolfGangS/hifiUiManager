@@ -9,7 +9,44 @@ $(document).ready(function(){
         webEventBridgeCallback(EventBridge);
     });
     $('input.searchbox').on('keyup paste change',function(){filterSearch(this)});
+
 });
+
+var repoList = [];
+
+function testObj(obj,head){
+    var o = {};
+    for(var i in head){
+        if(!obj.hasOwnProperty(head[i]))return false;
+        o[head[i]] = obj[head[i]];
+    }
+    return o;
+}
+
+function getRepoListing(){
+    $.get("repos.json",function(data){
+        repoList = [];
+        var html = "";
+        var rl = JSON.parse(data);
+        for(var k in rl){
+            var repo = testObj(rl[k],["name","owner","contact","url","tags"]);
+            if(repo === false || !(repo.tags instanceof Array) || repo.tags.length > 10)continue;
+            repoList.push(repo);
+        }
+    });
+    renderRepoList();
+}
+
+function renderRepoList(){
+    var html = "";
+    for(var k in repoList){
+        var repo = repoList[k];
+        if(repoUrls.indexOf(repo.url) < 0){
+            html += '<tr class="value-row reposearch" data-tags="'+repo.tags.join(" ")+'"><td class="key"><a target="_blank" href="' + repo.url + '">' + repo.name + '</a></td><td class="buttons add-del-buttons"><a href="javascript:void(0);" onclick="addRepoUrl(\'' + repo.url + '\');" class="glyphicon glyphicon-plus add-row"></a></td></tr>';
+        }
+    }
+    $("tbody#repolist").html(html);
+}
 
 function webEventBridgeCallback(eb){
     if (EventBridge !== undefined) {
@@ -182,6 +219,7 @@ function command(typ){
 function loadData()
 {
     repoUrls = [];
+    getRepoListing();
     webEvent([command("getRepoUrls"),command("getActiveScripts"),command("getRepositories"),command("getRunningScripts")]);
 }
 
@@ -200,10 +238,15 @@ function removeRepo(repo){
     webEvent({command:"removeRepoUrl",value:repo});
 }
 
+function addRepoUrl(url){
+    webEvent({command:"addRepoUrl",value:url});
+}
+
 function addRepo(){
     var newrepo = $("input#newrepo").val();
+    if(newrepo.length < 5)return;
     $("input#newrepo").val("");
-    webEvent({command:"addRepoUrl",value:newrepo});
+    addRepoUrl(newrepo);
 }
 var activeScripts = null;
 
@@ -252,6 +295,7 @@ function scriptEvent(scriptEventData){
                     }
                     $("tbody#activerepolist").html(html);
                     repoUrls = data.value;
+                    renderRepoList();
                     getRepos();
                 }
                 break;

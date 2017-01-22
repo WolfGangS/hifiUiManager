@@ -182,8 +182,9 @@ function testRepos(obj){
 function testRepo(obj){
     repo = testObj(obj,["categories","packages","meta"]);
     if(repo === false)return false;
-    repo.meta = testObj(repo.meta,["name","owner","contact","url"]);
+    repo.meta = testObj(repo.meta,["name","owner","contact","url","tags"]);
     if(repo.meta === false)return false;
+    if(!(repo.meta.tags instanceof Array))return false;
     repo.packages = testPackages(repo.packages);
     if(repo.packages === false)return false;
     repo.categories = testCategories(repo.categories,repo.packages);

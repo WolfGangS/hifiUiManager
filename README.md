@@ -5,6 +5,22 @@ You can install it by downloading the project and adding it locally, or by using
 
 https://wolfgangs.github.io/hifiUiManager/uiManager.js
 
+# Adding your repo to the listing.
+
+Make a pull request with the meta info for your repo added to the repos.json file in the html folder.
+
+Format:
+
+```javascript
+{
+    "name": "Test Repo",
+    "owner": "Mark Tester",
+    "contact": "Testface@testing.com",
+    "url" : "http://testing.com/repo/",
+    "tags": ["test","mark","testing.com"]
+}
+```
+
 # Repo Layout
 
 Repos are loaded as json.
@@ -42,7 +58,8 @@ The format is as below
         "name": "Test Repo",
         "owner": "Mark Tester",
         "contact": "Testface@testing.com",
-        "url" : "http://testing.com/repo/"
+        "url" : "http://testing.com/repo/",
+        "tags": ["test","mark","testing.com"]
     }
 }
 ```

@@ -20,6 +20,14 @@
             .float-right{
                 float: right;
             }
+            .table .value-row td,
+            .table .value-category td,
+            .table .inputs td {
+                vertical-align: middle;
+            }
+            td.buttons{
+                width: 30px;
+            }
         </style>
     </head>
     <body>
@@ -45,7 +53,7 @@
             </div>
             <div role="tabpanel" class="tab-pane top-pad" id="advanced">
                 <div class="text-right container">
-                    <input type="text" data-search="advsearch" class="searchbox"/>
+                    <input type="text" data-search="advsearch" class="searchbox" placeholder="Search..."/>
                 </div>
                 <div id="repolist" class="container top-pad">
 
@@ -60,7 +68,7 @@
                         <thead>
                             <tr class="headers">
                                 <th class="key">
-                                    <strong>Repos:</strong>
+                                    <strong>Active Repos:</strong>
                                 </th>
                                 <th class="buttons add-del-buttons">
                                 </th>
@@ -83,6 +91,20 @@
                 <div class="container">
                     <input type="button" class="button btn-primary" onclick="getRepos();" value="Reload Repos"/>
                     <input type="button" class="float-right button btn-danger" onclick="reset();" value="RESET"/>
+                </div>
+                <div class="container top-pad">
+                    <table class="table table-bordered" data-short-name="paths" name="paths" id="paths" data-setting-type="hash">
+                        <thead>
+                            <tr class="headers">
+                                <th class="key" colspan="2">
+                                    <strong>Available Repos:</strong>
+                                    <input type="text" data-search="reposearch" class="float-right searchbox" placeholder="Search..."/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="repolist">
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div role="tabpanel" class="tab-pane top-pad" id="running">
