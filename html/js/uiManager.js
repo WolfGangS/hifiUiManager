@@ -24,6 +24,7 @@ function testObj(obj,head){
 }
 
 function getRepoListings(){
+    alert("REPOS");
     $.ajax({
         url: "repos.json",
         success: function(data){
