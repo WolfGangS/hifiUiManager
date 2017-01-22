@@ -109,7 +109,7 @@ function removeRepoUrl(url){
 }
 
 function purge(repo){
-    stopScripts(getScriptsToRun([repo]]));
+    stopScripts(getScriptsToRun([repo]));
     var scripts = getActiveScripts();
     var newScripts = [];
     for(var i in scripts){
