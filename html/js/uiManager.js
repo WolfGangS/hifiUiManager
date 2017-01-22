@@ -29,11 +29,16 @@ function getRepoListings(){
     $.ajax({
         url: "repos.json",
         success: function(data){
-            alert(data);
-            webEvent({command:"setRepoList",value:JSON.parse(data)});
+            if(!(data instanceof Object)){
+                alert("Not Object");
+                data = JSON.parse(data);
+            }
+            else alert("OBJECT");
+            webEvent({command:"setRepoList",value:});
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
-            alert("Status: " + textStatus); alert("Error: " + errorThrown);
+            alert("Status: " + textStatus);
+            alert("Error: " + errorThrown);
         }
     });
 }
