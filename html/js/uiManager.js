@@ -34,7 +34,7 @@ function getRepoListings(){
                 data = JSON.parse(data);
             }
             else alert("OBJECT");
-            webEvent({command:"setRepoList",value:});
+            webEvent({command:"setRepoList",value:data});
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
             alert("Status: " + textStatus);
