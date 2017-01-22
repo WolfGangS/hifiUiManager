@@ -101,11 +101,32 @@ function removeRepoUrl(url){
     var repos = getRepoUrls();
     var index = repos.indexOf(url);
     if(index >= 0){
-        stopScripts(getScriptsToRun([cleanRepoUrl(url)]));
+        purge(cleanRepoUrl(url));
         repos.splice(index,1);
         Settings.setValue(SETTINGS_KEY_REPO_URLS,repos);
         scriptEvent({command:"getRepoUrls",value:repos});
     }
+}
+
+function purge(repo){
+    stopScripts(getScriptsToRun([repo]]));
+    var scripts = getActiveScripts();
+    var newScripts = [];
+    for(var i in scripts){
+        if(scripts[i].indexOf(repo) != 0){
+            newScripts.push(scripts[i]);
+        }
+    }
+
+    var cats = getActiveCategories();
+    var newCats = [];
+    for(var i in cats){
+        if(cats[i].indexOf(repo) != 0){
+            newCats.push(cats[i]);
+        }
+    }
+
+    setActiveScripts({scripts:newScripts,categories:newCats});
 }
 
 function getActiveScripts(){
@@ -145,7 +166,7 @@ function cleanRepoUrl(url){
     prts = url.split("https://");
     if(prts.length > 1)url = prts[1];
     prts = url.split("/");
-    return prts[0];
+    return prts[0].toLowerCase();
 }
 
 function testRepos(obj){
