@@ -7,6 +7,7 @@ var SETTINGS_KEY_REPOSITRY = "uiproject.manager.repository";
 var SETTINGS_KEY_SCRIPTS = "uiproject.manager.scripts";
 var SETTINGS_KEY_CATEGORIES = "uiproject.manager.categories";
 var SETTINGS_KEY_OPEN = "uiproject.manager.open";
+var SETTINGS_KEY_REPOLIST= "uiproject.manager.repolist";
 
 var OVERLAY_TITLE = "UI Manager"; var OVERLAY_SIZE = {width: 200, height: 400};
 
@@ -352,6 +353,29 @@ function loadScripts(scripts){
     Script.load(scripts);
 }
 
+var repoList = [];
+function setRepoList(rl){
+    log("SET REPO LIST");
+    if(!(rl instanceof Array))return;
+    log("IS ARRAY");
+    var rel = [];
+    for(var k in rl){
+        log(rl[k]);
+        var repo = testObj(rl[k],["name","owner","contact","url","tags"]);
+        if(repo === false || !(repo.tags instanceof Array) || repo.tags.length > 10)continue;
+        rel.push(repo);
+    }
+    repoList = rel;
+    log(repoList);
+    Settings.setValue(SETTINGS_KEY_REPOLIST,repoList);
+    scriptEvent({command:"getRepoList",value:repoList});
+}
+
+function getRepoList(){
+    repoList = Settings.getValue(SETTINGS_KEY_REPOLIST,[]);
+    return repoList;
+}
+
 function webEvent(webEventData){
     //log("\n--------------\n---- WEB EVENT ----\n--------------\n" + webEventData + "\n--------------\n--------------\n--------------");
     webEventData = JSON.parse(webEventData);
@@ -377,6 +401,9 @@ function webEvent(webEventData){
             case "reset":
                 reset();
                 break;
+            case "getRepoList":
+                scriptEvent({command:data.command,value:getRepoList()});
+                break;
         }
         if(!data.hasOwnProperty("value"))continue;
         switch (data.command) {
@@ -388,6 +415,9 @@ function webEvent(webEventData){
                 break;
             case "setRepositories":
                 setRepositories(data.value);
+                break;
+            case "setRepoList":
+                setRepoList(data.value);
                 break;
             case "setActiveScripts":
                 setActiveScripts(data.value);

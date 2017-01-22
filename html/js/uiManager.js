@@ -23,18 +23,16 @@ function testObj(obj,head){
     return o;
 }
 
-function getRepoListing(){
-    $.get("repos.json",function(data){
-        repoList = [];
-        var html = "";
-        var rl = JSON.parse(data);
-        for(var k in rl){
-            var repo = testObj(rl[k],["name","owner","contact","url","tags"]);
-            if(repo === false || !(repo.tags instanceof Array) || repo.tags.length > 10)continue;
-            repoList.push(repo);
+function getRepoListings(){
+    $.ajax({
+        url: "repos.json",
+        success: function(data){
+            webEvent({command:"setRepoList",value:JSON.parse(data)});
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            alert("Status: " + textStatus); alert("Error: " + errorThrown);
         }
     });
-    renderRepoList();
 }
 
 function renderRepoList(){
@@ -219,8 +217,8 @@ function command(typ){
 function loadData()
 {
     repoUrls = [];
-    getRepoListing();
-    webEvent([command("getRepoUrls"),command("getActiveScripts"),command("getRepositories"),command("getRunningScripts")]);
+    //getRepoListings();
+    webEvent([command("getRepoList"),command("getRepoUrls"),command("getActiveScripts"),command("getRepositories"),command("getRunningScripts")]);
 }
 
 function webEvent(val){
@@ -315,7 +313,10 @@ function scriptEvent(scriptEventData){
                     activeScripts = data.value;
                     renderRepositories();
                 break;
-
+            case "getRepoList":
+                repoList = data.value;
+                renderRepoList();
+                break;
         }
     }
 }
