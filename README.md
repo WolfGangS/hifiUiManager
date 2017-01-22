@@ -42,7 +42,7 @@ The format is as below
         "name": "Test Repo",
         "owner": "Mark Tester",
         "contact": "Testface@testing.com",
-        "url" : "http://testing.com/repo/
+        "url" : "http://testing.com/repo/"
     }
 }
 ```
