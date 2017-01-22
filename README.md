@@ -64,9 +64,11 @@ The format is as below
 }
 ```
 
-The script will queery the url the user puts in, so that is the one that needs to return the json.
+The script will query the url the user puts in, so that is the one that needs to return the json.
 
-example: http://wlf.io/repo/  is the repo I have created. I place the script to return my repo json, in http://wlf.io/repo/index.php
+Example: http://wlf.io/repo/  is the repo I have created. I place the script to return my repo json, in http://wlf.io/repo/index.php
+
+As some users may be loading this from a https connection, you will need to serve your repo over https for best results. (Users that load the uiManager from github wont be able to access http repos)
 
 Due to the way that this has to be loaded you need to handle CORS with the "Access-Control-Allow-Origin" header.
 
