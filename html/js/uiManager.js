@@ -8,6 +8,7 @@ $(document).ready(function(){
         EventBridge = WebChannel.objects.eventBridgeWrapper.eventBridge;
         webEventBridgeCallback(EventBridge);
     });
+    $('input.searchbox').on('keyup paste change',function(){filterSearch(this)});
 });
 
 function webEventBridgeCallback(eb){
@@ -83,9 +84,34 @@ function renderCategory(cat,category,packages,repo,repoKey){
     return html;
 }
 
+function filterSearch(elem){
+    var search = "." + $(elem).data("search");
+    var filter = $(elem).val();
+    if(filter.length < 1){
+        $(search).show();
+        $(search + "-hide").show();
+        return;
+    }
+    $(search + "-hide").hide();
+    $(search).hide();
+    $(search + '[data-tags*="' + filter + '"]').show();
+
+}
+
 function renderRepo(repo,c,repoKey){
-    var html = '<div class="panel panel-default"><div class="panel-heading">' +
-        repo.meta.name + '<div class="float-right"><label>Active&nbsp;</label>' +
+
+    var tags = [];
+    for(var k in repo.packages){
+        var tgs = repo.packages[k].tags;
+        for(var t in tgs){
+            if(tags.indexOf(tgs[t]) < 0){
+                tags.push(tgs[t]);
+            }
+        }
+    }
+
+    var html = '<div data-tags="' + tags.join(" ") + '" class="advsearch panel panel-default"><div class="panel-heading">' +
+        repo.meta.name + '<div class="advsearch-hide float-right"><label>Active&nbsp;</label>' +
         '<input type="checkbox" onchange="checkAllPkg(this,' + c + ');" ' +
         (isActivePkg(repoKey,"") ? 'checked="checked" ' : "") + 'class="repocheck" data-repo="' + repoKey + '" /></div>' +
         '</div><div class="panel-body">';
@@ -107,7 +133,7 @@ function renderPackages(pkgs, c, repoKey){
 }
 
 function renderPackage(pkg,k,c,repoKey){
-    return '<tr><td><input type="checkbox" data-pkg="' + k + '" ' +
+    return '<tr class="advsearch" data-tags="' + pkg.tags.join(" ") + '"><td><input type="checkbox" data-pkg="' + k + '" ' +
         (isActivePkg(repoKey,k) ? 'checked="checked" ' : "") +
         'data-repo="' + repoKey + '" ' +
         'class="pkgcheck pkgcheck-' + c + '" /></td><td>' + pkg.name + "</td><tr>";
