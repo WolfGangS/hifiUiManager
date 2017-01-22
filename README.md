@@ -20,7 +20,8 @@ The format is as below
             "packages" : [
                 "package1",
                 "package2"
-            ]
+            ],
+            "tags": ["thing","category"]
         },
         "cat2": { .....
     },
@@ -31,18 +32,24 @@ The format is as below
             "source" : "http://testing.com/scripts/package1.js",
             "creator" : "Bot Test",
             "version" : "1.0",
-            "datetime": "2017-01-20 20:00",
-            "include" : true
+            "datetime" : "2017-01-20 20:00",
+            "include" : true,
+            "tags" : ["test","bot","thing"
         },
         "package2":{ .....
     },
     "meta":{
         "name": "Test Repo",
         "owner": "Mark Tester",
-        "contact": "Testface@testing.com"
+        "contact": "Testface@testing.com",
+        "url" : "http://testing.com/repo/
     }
 }
 ```
+
+The script will queery the url the user puts in, so taht is the one that needs to return the json.
+
+example: http://wlf.io/repo/  is the repo i have created. I place the script to return my repo json, in http://wlf.io/repo/index.php
 
 Due to the way that this has to be laoded you need to handle CORS with the "Access-Control-Allow-Origin" header.
 
