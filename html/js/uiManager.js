@@ -27,6 +27,7 @@ function getRepoListings(){
     $.ajax({
         url: "repos.json",
         success: function(data){
+            alert(data);
             webEvent({command:"setRepoList",value:JSON.parse(data)});
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {
