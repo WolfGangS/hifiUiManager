@@ -182,7 +182,7 @@ function testRepos(obj){
 function testRepo(obj){
     repo = testObj(obj,["categories","packages","meta"]);
     if(repo === false)return false;
-    repo.meta = testObj(repo.meta,["name","owner","contact"]);
+    repo.meta = testObj(repo.meta,["name","owner","contact","url"]);
     if(repo.meta === false)return false;
     repo.packages = testPackages(repo.packages);
     if(repo.packages === false)return false;
@@ -194,8 +194,9 @@ function testRepo(obj){
 function testPackages(obj){
     var packages = {};
     for(var k in obj){
-        var pkg = testObj(obj[k],["name","description","source","creator","version","datetime","include"]);
+        var pkg = testObj(obj[k],["name","description","source","creator","version","datetime","include","tags"]);
         if(pkg === false)return false;
+        if(!(pkg.tags instanceof Array))return false;
         packages[k] = pkg;
     }
     return packages;
@@ -211,9 +212,10 @@ function testCategories(obj,packages){
     return categories;
 }
 function testCategory(obj,packages){
-    var category = testObj(obj,["name","description","packages"]);
+    var category = testObj(obj,["name","description","packages","tags"]);
     if(category === false)return false;
     if(!(category.packages instanceof Array))return false;
+    if(!(category.tags instanceof Array))return false;
     var pkgs = Object.keys(packages);
     for(var i in category.packages){
         var pkg = category.packages[i];
