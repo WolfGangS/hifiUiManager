@@ -1,13 +1,14 @@
 
 //["objectName","position","size","visible","url","destroyed(QObject*)","destroyed()","objectNameChanged(QString)","deleteLater()","visibleChanged()","positionChanged()","sizeChanged()","moved(glm::vec2)","resized(QSizeF)","closed()","fromQml(QVariant)","scriptEventReceived(QVariant)","webEventReceived(QVariant)","isVisible()","setVisible(bool)","getPosition()","setPosition(glm::vec2)","setPosition(int,int)","getSize()","setSize(glm::vec2)","setSize(int,int)","setTitle(QString)","raise()","close()","getEventBridge()","sendToQml(QVariant)","emitScriptEvent(QVariant)","emitWebEvent(QVariant)","hasMoved(QVector2D)","hasClosed()","qmlToScript(QVariant)","urlChanged()","getURL()","setURL(QString)","setScriptURL(QString)"]
 
-var SETTINGS_KEY_SETUP = "uiproject.manager.setup";
-var SETTINGS_KEY_REPO_URLS = "uiproject.manager.repo_urls";
-var SETTINGS_KEY_REPOSITRY = "uiproject.manager.repository";
-var SETTINGS_KEY_SCRIPTS = "uiproject.manager.scripts";
-var SETTINGS_KEY_CATEGORIES = "uiproject.manager.categories";
-var SETTINGS_KEY_OPEN = "uiproject.manager.open";
-var SETTINGS_KEY_REPOLIST= "uiproject.manager.repolist";
+var SKEY_SETUP = "uiproject.manager.setup";
+var SKEY_OPEN = "uiproject.manager.open";
+
+var SKEY_ACTIVE_REPOS = "uiproject.manager.active_repos";
+var SKEY_ACTIVE_SCRIPTS = "uiproject.manager.scripts";
+var SKEY_ACTIVE_CATEGORIES = "uiproject.manager.active_categories";
+var SKEY_REPOSITORIES = "uiproject.manager.repositories";
+var SKEY_REPOLIST= "uiproject.manager.repolist";
 
 var OVERLAY_TITLE = "UI Manager"; var OVERLAY_SIZE = {width: 200, height: 400};
 
@@ -15,12 +16,57 @@ var uiHtml = Script.resolvePath("html/uiManager.html");
 
 var webOverlay = null;
 
+function setSetting(set,val){
+    Settings.setValue(set,JSON.stringify(val));
+}
+function getSetting(set){
+    //log(["GET",set]);
+    var get = Settings.getValue(set,null);
+    //log(["Loaded",(typeof get !== "string"),get]);
+    if(typeof get !== "string")return null;
+    return JSON.parse(get);
+}
+
 function log(val){print(JSON.stringify(val));}
 
 var MENU_NAME = "UI";
 var MENU_ITEM = "Open Manager";
 
-var repositories = null;
+var repositories = {};
+var repoList = [];
+var webOpen = true;
+var setupComplete = false;
+var activeScripts = [];
+var activeCategories = [];
+var activeRepos = [];
+
+function setup(){
+    var _repositories = getSetting(SKEY_REPOSITORIES);
+    var _repoList = getSetting(SKEY_REPOLIST);
+    var _activeRepos = getSetting(SKEY_ACTIVE_REPOS);
+    var _activeScripts = getSetting(SKEY_ACTIVE_SCRIPTS);
+    var _activeCategories = getSetting(SKEY_ACTIVE_CATEGORIES);
+
+    if(_repositories != null)repositories = _repositories;
+    if(_repoList != null)repoList = _repoList;
+    if(_activeRepos != null)activeRepos = _activeRepos;
+    if(_activeScripts != null)activeScripts = _activeScripts;
+    if(_activeCategories != null)activeCategories = _activeCategories;
+
+    webOpen = getSetting(SKEY_OPEN) === true ? true : false;
+    setupComplete = getSetting(SKEY_SETUP) === true ? true : false;
+
+
+
+    addMenu();
+    createWebOverlay();
+    loadScripts(getScriptsToRun());
+    if(!setupComplete || webOpen){
+        openWebOverlay();
+    }
+    Script.scriptEnding.connect(scriptEnd);
+}
+
 
 function addMenu(){
     if(!Menu.menuExists(MENU_NAME)){
@@ -62,7 +108,7 @@ function createWebOverlay(){
 
 function openWebOverlay(){
     createWebOverlay();
-    Settings.setValue(SETTINGS_KEY_OPEN,true);
+    setSetting(SKEY_OPEN,true);
     webOverlay.setVisible(true);
 }
 
@@ -75,43 +121,25 @@ function wipeMenu(){
     }
 }
 
-
-function setup(){
-    addMenu();
-    createWebOverlay();
-    getRepositories();
-    loadScripts(getScriptsToRun());
-    if(!Settings.getValue(SETTINGS_KEY_SETUP,false) || Settings.getValue(SETTINGS_KEY_OPEN,true)){
-        openWebOverlay();
-    }
-    Script.scriptEnding.connect(scriptEnd);
-}
-
 function scriptEvent(val){
     //log(["Sending",val]);
     webOverlay.emitScriptEvent(JSON.stringify(val));
 }
 
-function getRepoUrls(){
-    var repos = Settings.getValue(SETTINGS_KEY_REPO_URLS,null);
-    if(!(repos instanceof Array))return [];
-    else return repos;
-}
-
 function removeRepoUrl(url){
-    var repos = getRepoUrls();
-    var index = repos.indexOf(url);
+    log("REMOVING REPO " )
+    var index = activeRepos.indexOf(url);
     if(index >= 0){
         purge(cleanRepoUrl(url));
-        repos.splice(index,1);
-        Settings.setValue(SETTINGS_KEY_REPO_URLS,repos);
-        scriptEvent({command:"getRepoUrls",value:repos});
+        activeRepos.splice(index,1);
+        setSetting(SKEY_ACTIVE_REPOS,activeRepos);
     }
+    scriptEvent({command:"getActiveRepos",value:activeRepos});
 }
 
 function purge(repo){
     stopScripts(getScriptsToRun([repo]));
-    var scripts = getActiveScripts();
+    var scripts = activeScripts;
     var newScripts = [];
     for(var i in scripts){
         if(scripts[i].indexOf(repo) != 0){
@@ -119,7 +147,7 @@ function purge(repo){
         }
     }
 
-    var cats = getActiveCategories();
+    var cats = activeCategories;
     var newCats = [];
     for(var i in cats){
         if(cats[i].indexOf(repo) != 0){
@@ -130,26 +158,16 @@ function purge(repo){
     setActiveScripts({scripts:newScripts,categories:newCats});
 }
 
-function getActiveScripts(){
-    var scripts = Settings.getValue(SETTINGS_KEY_SCRIPTS,null);
-    if(!(scripts instanceof Array))return [];
-    else return scripts;
-}
-
-function getActiveCategories(){
-    var cats = Settings.getValue(SETTINGS_KEY_CATEGORIES,null);
-    if(!(cats instanceof Array))return [];
-    else return cats;
-}
 
 function addRepoUrl(url){
     if(url.indexOf("http://") != 0 && url.indexOf("https://") != 0){
-        url = "http://" + url;
+        url = "https://" + url;
     }
-    repos = getRepoUrls();
-    repos.push(url);
-    Settings.setValue(SETTINGS_KEY_REPO_URLS,repos);
-    scriptEvent({command:"getRepoUrls",value:repos});
+    if(activeRepos.indexOf(url) < 0){
+        activeRepos.push(url);
+        setSetting(SKEY_ACTIVE_REPOS,activeRepos);
+    }
+    scriptEvent({command:"getActiveRepos",value:activeRepos});
 }
 
 function testObj(obj,head){
@@ -171,6 +189,7 @@ function cleanRepoUrl(url){
 }
 
 function testRepos(obj){
+    if(!(obj instanceof Object))return false;
     var repos = {};
     for(var k in obj){
         var repo = testRepo(obj[k]);
@@ -233,39 +252,34 @@ function setRepositories(reposit){
     if(reposit === false)return;
     stopScripts(getScriptsToRun());
     repositories = reposit;
-    Settings.setValue(SETTINGS_KEY_REPOSITRY,reposit);
+    setSetting(SKEY_REPOSITORIES,repositories);
     scriptEvent({command:"getRepositories",value:reposit});
     loadScripts(getScriptsToRun());
-}
-
-function getRepositories(){
-    var reposit = testRepos(Settings.getValue(SETTINGS_KEY_REPOSITRY,false));
-    if(reposit === false)return false;
-    repositories = reposit;
-    return reposit;
 }
 
 function setActiveScripts(obj){
     var active = testObj(obj,["scripts","categories"]);
     if(active === false)return;
     stopScripts(getScriptsToRun());
-    Settings.setValue(SETTINGS_KEY_SCRIPTS,active.scripts);
-    Settings.setValue(SETTINGS_KEY_CATEGORIES,active.categories);
-    Settings.setValue(SETTINGS_KEY_SETUP,true);
-    log(["Active scripts",getActiveScripts()]);
-    log(["Active Cats",getActiveCategories()]);
+    activeScripts = active.scripts;
+    activeCategories = active.categories;
+    setSetting(SKEY_ACTIVE_SCRIPTS,activeScripts);
+    setSetting(SKEY_ACTIVE_CATEGORIES,activeCategories);
+    if(!setupComplete)setSetting(SKEY_SETUP,true);
+    log(["Active scripts",activeScripts]);
+    log(["Active Cats",activeCategories]);
     loadScripts(getScriptsToRun());
 }
 
 function reset(){
     stopScripts(getScriptsToRun());
-    Settings.setValue(SETTINGS_KEY_SCRIPTS,[]);
-    Settings.setValue(SETTINGS_KEY_CATEGORIES,[]);
-    Settings.setValue(SETTINGS_KEY_SETUP,false);
-    Settings.setValue(SETTINGS_KEY_REPOSITRY,{});
-    Settings.setValue(SETTINGS_KEY_REPO_URLS,[]);
-    Settings.setValue(SETTINGS_KEY_OPEN,true);
-    Settings.setValue(SETTINGS_KEY_REPOLIST, []);
+    setSetting(SKEY_SETUP,null);
+    setSetting(SKEY_OPEN,null);
+    setSetting(SKEY_ACTIVE_REPOS,null);
+    setSetting(SKEY_ACTIVE_SCRIPTS,null);
+    setSetting(SKEY_ACTIVE_CATEGORIES,null);
+    setSetting(SKEY_REPOSITORIES,null);
+    setSetting(SKEY_REPOLIST,null);
     ScriptDiscoveryService.reloadAllScripts();
 }
 
@@ -301,11 +315,10 @@ function getRequirements(repo,p){
 }
 
 function getScriptsToRun(repoFilter){
-    if(getRepositories() === false)return false;
     if(!(repoFilter instanceof Array)){
         repoFilter = Object.keys(repositories);
     }
-    var scripts = getActiveScripts();
+    var scripts = activeScripts;
     var includes = [];
     var loads = [];
     for(var i in scripts){
@@ -340,7 +353,7 @@ function getScriptsToRun(repoFilter){
             }
         }
     }
-    var cats = getActiveCategories();
+    var cats = activeCategories;
     for(var i in cats){
         var c = cats[i].split(">");
         if(c.length == 2){
@@ -377,7 +390,7 @@ function loadScripts(scripts){
     //Script.load(scripts);
 }
 
-var repoList = [];
+
 function setRepoList(rl){
     //log("SET REPO LIST");
     if(!(rl instanceof Array))return;
@@ -391,17 +404,12 @@ function setRepoList(rl){
     }
     repoList = rel;
     //log(repoList);
-    Settings.setValue(SETTINGS_KEY_REPOLIST,repoList);
+    setSetting(SKEY_REPOLIST,repoList);
     scriptEvent({command:"getRepoList",value:repoList});
 }
 
-function getRepoList(){
-    repoList = Settings.getValue(SETTINGS_KEY_REPOLIST,[]);
-    return repoList;
-}
-
 function webEvent(webEventData){
-    //log("\n--------------\n---- WEB EVENT ----\n--------------\n" + webEventData + "\n--------------\n--------------\n--------------");
+    log("\n--------------\n---- WEB EVENT ----\n--------------\n" + webEventData + "\n--------------\n--------------\n--------------");
     webEventData = JSON.parse(webEventData);
     if(!(webEventData instanceof Array)){
         webEventData = [webEventData];
@@ -410,14 +418,14 @@ function webEvent(webEventData){
         data = webEventData[i];
         if(!data.hasOwnProperty("command"))continue;
         switch(data.command){
-            case "getRepoUrls":
-                scriptEvent({command:data.command,value:getRepoUrls()});
-                break;
             case "getRepositories":
-                scriptEvent({command:data.command,value:getRepositories()});
+                scriptEvent({command:data.command,value:repositories});
+                break;
+            case "getActiveRepos":
+                scriptEvent({command:data.command,value:activeRepos});
                 break;
             case "getActiveScripts":
-                scriptEvent({command:data.command,value:{scripts:getActiveScripts(),categories:getActiveCategories()}});
+                scriptEvent({command:data.command,value:{scripts:activeScripts,categories:activeCategories}});
                 break;
             case "getRunningScripts":
                 scriptEvent({command:data.command,value:ScriptDiscoveryService.getRunning()});
@@ -426,7 +434,7 @@ function webEvent(webEventData){
                 reset();
                 break;
             case "getRepoList":
-                scriptEvent({command:data.command,value:getRepoList()});
+                scriptEvent({command:data.command,value:repoList});
                 break;
         }
         if(!data.hasOwnProperty("value"))continue;
@@ -457,7 +465,7 @@ function webEvent(webEventData){
 }
 
 function webClosed(arg){
-    Settings.setValue(SETTINGS_KEY_OPEN,false);
+    setSetting(SKEY_OPEN,false);
     //log("WEB Closed - " + arg);
 }
 

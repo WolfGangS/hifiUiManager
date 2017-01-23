@@ -226,7 +226,7 @@ function loadData()
 {
     repoUrls = [];
     //getRepoListings();
-    webEvent([command("getRepoList"),command("getRepoUrls"),command("getActiveScripts"),command("getRepositories"),command("getRunningScripts")]);
+    webEvent([command("getRepoList"),command("getActiveRepos"),command("getActiveScripts"),command("getRepositories"),command("getRunningScripts")]);
 }
 
 function webEvent(val){
@@ -293,7 +293,7 @@ function scriptEvent(scriptEventData){
         if(!data.hasOwnProperty("command"))continue;
         if(!data.hasOwnProperty("value"))continue;
         switch (data.command) {
-            case "getRepoUrls":
+            case "getActiveRepos":
                 if(data.value instanceof Array){
                     var html = "";
                     for(var i = 0;i < data.value.length; i++){
