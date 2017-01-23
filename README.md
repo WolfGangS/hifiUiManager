@@ -3,7 +3,7 @@ A manager for Interface scripts, that supports multiple "repositories"
 
 You can install it by downloading the project and adding it locally, or by using the following url.
 
-https://wolfgangs.github.io/hifiUiManager/uiManager.js
+https://wolfgangs.github.io/hifiUiManager/HiFiUiManager.js
 
 # Adding your repo to the listing.
 
