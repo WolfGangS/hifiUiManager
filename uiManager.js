@@ -196,9 +196,10 @@ function testRepo(obj){
 function testPackages(obj){
     var packages = {};
     for(var k in obj){
-        var pkg = testObj(obj[k],["name","description","source","creator","version","datetime","include","tags"]);
+        var pkg = testObj(obj[k],["name","description","source","creator","version","datetime","include","tags","requires"]);
         if(pkg === false)return false;
         if(!(pkg.tags instanceof Array))return false;
+        if(!(pkg.requires instanceof Array))return false;
         packages[k] = pkg;
     }
     return packages;
@@ -227,7 +228,7 @@ function testCategory(obj,packages){
 }
 
 function setRepositories(reposit){
-    log(reposit);
+    //log(reposit);
     reposit = testRepos(reposit);
     if(reposit === false)return;
     stopScripts(getScriptsToRun());
@@ -238,8 +239,8 @@ function setRepositories(reposit){
 }
 
 function getRepositories(){
-    var reposit = testRepos(Settings.getValue(SETTINGS_KEY_REPOSITRY,null));
-    if(reposit === false)return null;
+    var reposit = testRepos(Settings.getValue(SETTINGS_KEY_REPOSITRY,false));
+    if(reposit === false)return false;
     repositories = reposit;
     return reposit;
 }
@@ -269,6 +270,7 @@ function reset(){
 }
 
 function stopScripts(scripts){
+    if(scripts === false)return;
     var running = ScriptDiscoveryService.getRunning();
     for(var i in running){
         if(scripts.indexOf(running[i].path) >= 0){
@@ -277,8 +279,29 @@ function stopScripts(scripts){
     }
 }
 
+function getRequirements(repo,p){
+    var urls = [];
+    if(repo.packages.hasOwnProperty(p)){
+        var url = repo.packages[p].source;
+        for(var i in repo.packages[p].requires){
+            var r = repo.packages[p].requires[i];
+            if(!repo.packages.hasOwnProperty(r))return false;
+            var us = getRequirements(repo,r);
+            if(us === false)return false;
+            for(var u in us){
+                if(urls.indexOf(us[u]) < 0 && us[u] != url){
+                    urls.push(us[u]);
+                }
+            }
+        }
+        urls.push(url);
+    }
+    else return false;
+    return urls;
+}
+
 function getScriptsToRun(repoFilter){
-    getRepositories();
+    if(getRepositories() === false)return false;
     if(!(repoFilter instanceof Array)){
         repoFilter = Object.keys(repositories);
     }
@@ -293,12 +316,11 @@ function getScriptsToRun(repoFilter){
             var pkg = c[1];
             if(repositories.hasOwnProperty(repo)){
                 if(repositories[repo].packages.hasOwnProperty(pkg)){
-                    pkg = repositories[repo].packages[pkg];
-                    /*if(pkg.include === true && includes.indexOf(pkg.source) < 0){
-                        includes.push(pkg.source);
-                    }
-                    else*/if(loads.indexOf(pkg.source) < 0){
-                        loads.push(pkg.source);
+                    urls = getRequirements(repositories[repo],pkg);
+                    for(var u in urls){
+                        if(loads.indexOf(urls[u]) < 0){
+                            loads.push(urls[u]);
+                        }
                     }
                 }
             }
@@ -308,12 +330,11 @@ function getScriptsToRun(repoFilter){
             if(repoFilter.indexOf(repo) < 0)continue;
             if(repositories.hasOwnProperty(repo)){
                 for(var j in repositories[repo].packages){
-                    var pkg = repositories[repo].packages[j];
-                    /*if(pkg.include === true && includes.indexOf(pkg.source) < 0){
-                        includes.push(pkg.source);
-                    }
-                    else */if(loads.indexOf(pkg.source) < 0){
-                        loads.push(pkg.source);
+                    urls = getRequirements(repositories[repo],j);
+                    for(var u in urls){
+                        if(loads.indexOf(urls[u]) < 0){
+                            loads.push(urls[u]);
+                        }
                     }
                 }
             }
@@ -332,12 +353,11 @@ function getScriptsToRun(repoFilter){
                     for(var j in pkgs){
                         var pkg = pkgs[j];
                         if(repositories[repo].packages.hasOwnProperty(pkg)){
-                            pkg = repositories[repo].packages[pkg];
-                            /*if(pkg.include === true && includes.indexOf(pkg.source) < 0){
-                                includes.push(pkg.source);
-                            }
-                            else */if(loads.indexOf(pkg.source) < 0){
-                                loads.push(pkg.source);
+                            urls = getRequirements(repositories[repo],pkg);
+                            for(var u in urls){
+                                if(loads.indexOf(urls[u]) < 0){
+                                    loads.push(urls[u]);
+                                }
                             }
                         }
                     }
@@ -349,26 +369,28 @@ function getScriptsToRun(repoFilter){
 }
 
 function loadScripts(scripts){
-    /*log(["INCLUDING : ",includes]);
-    Script.include(includes);*/
+    if(scripts === false)return;
     log(["LOADING : ",scripts]);
-    Script.load(scripts);
+    for(var s in scripts){
+        Script.load(scripts[s]);
+    }
+    //Script.load(scripts);
 }
 
 var repoList = [];
 function setRepoList(rl){
-    log("SET REPO LIST");
+    //log("SET REPO LIST");
     if(!(rl instanceof Array))return;
-    log("IS ARRAY");
+    //log("IS ARRAY");
     var rel = [];
     for(var k in rl){
-        log(rl[k]);
+        //log(rl[k]);
         var repo = testObj(rl[k],["name","owner","contact","url","tags"]);
         if(repo === false || !(repo.tags instanceof Array) || repo.tags.length > 10)continue;
         rel.push(repo);
     }
     repoList = rel;
-    log(repoList);
+    //log(repoList);
     Settings.setValue(SETTINGS_KEY_REPOLIST,repoList);
     scriptEvent({command:"getRepoList",value:repoList});
 }
