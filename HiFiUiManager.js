@@ -24,7 +24,12 @@ function getSetting(set){
     var get = Settings.getValue(set,null);
     //log(["Loaded",(typeof get !== "string"),get]);
     if(typeof get !== "string")return null;
-    return JSON.parse(get);
+    try{
+        get = JSON.parse(get);
+        return get;
+    }catch(e){
+        return null;
+    }
 }
 
 function log(val){print(JSON.stringify(val));}
