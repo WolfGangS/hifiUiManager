@@ -46,6 +46,7 @@ var activeCategories = [];
 var activeRepos = [];
 
 function setup(){
+    Settings.setValue("HUDUIEnabled", true);
     var _repositories = getSetting(SKEY_REPOSITORIES);
     var _repoList = getSetting(SKEY_REPOLIST);
     var _activeRepos = getSetting(SKEY_ACTIVE_REPOS);
