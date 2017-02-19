@@ -32,7 +32,7 @@ function getSetting(set){
     }
 }
 
-function log(val){print(JSON.stringify(val));}
+function log(val){/*print(JSON.stringify(val));*/}
 
 var MENU_NAME = "UI";
 var MENU_ITEM = "Open Manager";
