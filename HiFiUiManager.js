@@ -391,7 +391,8 @@ function loadScripts(scripts){
     if(scripts === false)return;
     log(["LOADING : ",scripts]);
     for(var s in scripts){
-        Script.load(scripts[s]);
+        //Script.load(scripts[s]);
+        Script.include(script[s]);
     }
     //Script.load(scripts);
 }
