@@ -392,7 +392,7 @@ function loadScripts(scripts){
     log(["LOADING : ",scripts]);
     for(var s in scripts){
         //Script.load(scripts[s]);
-        Script.include(script[s]);
+        Script.include(scripts[s]);
     }
     //Script.load(scripts);
 }
